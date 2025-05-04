@@ -1,0 +1,11 @@
+My TODO list:
+==========
+zh doc: js
+js
+upload to npm
+readme
+zh doc: py
+python
+en doc
+readme
+upload to pypi
