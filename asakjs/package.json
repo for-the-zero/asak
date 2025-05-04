@@ -1,0 +1,12 @@
+{
+  "name": "asakjs",
+  "version": "0.1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "for_the_zero",
+  "license": "MIT",
+  "description": ""
+}
