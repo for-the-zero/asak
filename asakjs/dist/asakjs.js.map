@@ -1,0 +1,1 @@
+{"version":3,"file":"asakjs.js","sources":["../src/index.js"],"sourcesContent":["export function greet() {\n    return 'Hello from asakjs!';\n}\n\nconsole.log(greet());\n"],"names":["greet","console","log"],"mappings":";;;IAAO,SAASA,KAAKA,GAAG;IACpB,EAAA,OAAO,oBAAoB,CAAA;IAC/B,CAAA;IAEAC,OAAO,CAACC,GAAG,CAACF,KAAK,EAAE,CAAC;;;;;;;;;;;;"}
