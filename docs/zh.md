@@ -6,17 +6,6 @@
 - 含有` --> return`的注释代表该函数有返回值
 - `{Object}`代表传入一个对象，`[Array]`和`[List]`分别代表在JavaScript中传入一个数组和在Python中传入一个列表
 
-# 目录
-
-- [初始化](#1-初始化)
-- - [安装](#11-安装)
-- - [定义](#12-定义)
-- - [配置json](#13-配置json)
-- [速率限制记录相关](#2-速率限制记录相关)
-- [记录和请求相关](#3-记录和请求相关)
-- - [获取模型](#31-获取模型)
-- - [请求API](#32-请求api)
-
 ---
 
 # 1. 初始化
@@ -104,35 +93,37 @@ AI = asak( {Object} )
 JavaScript:
 
 ```javascript
-AI.record.get(); // 获取所有记录 --> return
-AI.record.replace( [Array] ); // 替换所有记录
-AI.record.add( [Array] );  // 追加到记录 --> return
-AI.record.organize(); // 整理记录 --> return
+AI.recorder.get(); // 获取所有记录 --> return
+AI.recorder.replace( [Array] ); // 替换所有记录
+AI.recorder.add( [Array] );  // 追加到记录 --> return
 ```
 
 Python:
 
 ```python
-AI.record.get() # 获取所有记录 --> return
-AI.record.replace( [List] ) # 替换所有记录
-AI.record.add( [List] ) # 追加到记录 --> return
-AI.record.organize() # 整理记录 --> return
+AI.recorder.get() # 获取所有记录 --> return
+AI.recorder.replace( [List] ) # 替换所有记录
+AI.recorder.add( [List] ) # 追加到记录 --> return
 ```
 
 - `.replace`的作用是完全替换掉原有的记录
 - `.add`的作用是追加到原有的记录，将新旧记录进行合并
-- `.organize`的作用是整理记录，根据请求速率留下还在限制当前速率的时间戳
 
 以上返回均为一个数组/列表，结构如下（用JSON表示）：
 
 ```json
 [
-    [1736831640,1744675200,1919810000],
+    {
+        "m": [1736831640,1744675200,1919810000],
+        "d": [1736831640,1744675200,1919810000],
+        "limit_m": 6,
+        "limit_d": 9,
+    },
     ...
 ]
 ```
 
-每个子数组/列表的索引与模型在配置中`models`的索引对应，每个数字代表分别在这三个时间戳请求了该模型
+索引与`models`中的索引对应，`m`和`d`分别一天和一分钟内请求时间戳，`limit_m`和`limit_d`分别表示每分钟和每天的限制数量
 
 # 3. 请求
 
@@ -151,7 +142,7 @@ AI.get_model(...) # 获取指定模型 --> return
 这个的传入参数较为复杂，故拎出来单独介绍
 
 1. `mode`（必填）：排序模式，只能填写字符串，可以填写`index`（筛选后根据索引取最高的一个模型）、`avaliable`（最可用的）、`random`（能用就行，不管了）
-2. `filter`（可选）：一个函数一个函数，传入`your_func(index, model)`，是模型的索引和对象，你的函数需要返回布尔值，返回`true`/`True`则表示可以选择该模型，这个函数会被调用多次
+2. `filter`（可选）：一个函数`your_func(index, model)`，参数为是模型的索引和对象，你的函数需要返回布尔值，返回`true`/`True`则表示可以选择该模型，这个函数会被调用多次
 
 返回值为一个对象，结构如下（用JSON表示）：
 
@@ -208,4 +199,15 @@ consonle.log(callback.model);
 (async()=>{for await(let delta of callback.delta){ // 我觉得这样好看，你管我┐⁠(⁠￣⁠ヘ⁠￣⁠)⁠┌
     console.log(delta);
 };})();
+```
+
+```python
+AI = asak(...)
+callback = AI.request('index', None, [
+    {"role": "user", "content": "你好"}
+])
+print(callback.provider)
+print(callback.model)
+for delta in callback.delta:
+    print(delta)
 ```

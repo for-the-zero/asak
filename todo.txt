@@ -1,6 +1,5 @@
 My TODO list:
 ==========
-zh doc: js
 js
 upload to npm
 readme
