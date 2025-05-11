@@ -1,6 +1,6 @@
-const { Configuration, OpenAIApi } = require("openai");
+const { OpenAI } = require("openai");
 
-export class asak {
+class asak {
     #config = {providers: {}, models: []};
     #records = [];
 
@@ -92,7 +92,7 @@ export class asak {
         },
     };
 
-    #is_model_avaliable(i){
+    #is_model_available(i){
         if(this.#records[i].m.length < this.#records[i].limit_m && this.#records[i].d.length < this.#records[i].limit_d){
             return true;
         } else {return false;};
@@ -107,7 +107,7 @@ export class asak {
         let preparing_models = [];
         if(typeof filter === 'function'){
             for(let i = 0; i < this.#config.models.length; i++){
-                if(filter(i,this.#config.models[i]) && this.#is_model_avaliable(i)){
+                if(filter(i,this.#config.models[i]) && this.#is_model_available(i)){
                     preparing_models.push(i);
                 };
             };
@@ -115,14 +115,14 @@ export class asak {
             throw new Error('Filter param is not a function');
         };
         if(preparing_models.length === 0){
-            throw new Error('No model is avaliable');
+            throw new Error('No model is available');
         };
         let selected_model;
         switch(mode){
             case 'index':
                 selected_model = Math.min(...preparing_models);
                 break;
-            case 'avaliable':
+            case 'available':
                 selected_model = preparing_models.sort((a,b)=>{return this.#model_availability(b) - this.#model_availability(a);})[0];
                 break;
             case 'random':
@@ -131,6 +131,8 @@ export class asak {
             default:
                 throw new Error('Mode param is not valid');
         };
+        this.#records[selected_model].m.push(Date.now());
+        this.#records[selected_model].d.push(Date.now());
         return {
             "provider": this.#config.models[selected_model].provider,
             "base_url": this.#config.providers[this.#config.models[selected_model].provider].base_url,
@@ -140,16 +142,16 @@ export class asak {
     };
     async request(mode, filter, messages){
         let selected_model = this.get_model(mode, filter);
-        let openai_api = new OpenAIApi(new Configuration({
-            apiKey: selected_model.key,
+        let openai_cilent = new OpenAI({
             baseURL: selected_model.base_url,
-        }));
-        const stream = await openai_api.createChatCompletion({
-            model: selected_model.model,
-            messages: messages,
-            stream: true
+            apiKey: selected_model.key,
         });
-        async function* deltaGenerator() {
+        let stream = await openai_cilent.chat.completions.create({
+            model: selected_model.model,
+            stream: true,
+            messages: messages,
+        });
+        let deltaGenerator = async function*() {
             for await (const chunk of stream) {
                 const content = chunk.choices?.[0]?.delta?.content;
                 if (content !== undefined) {
@@ -163,8 +165,10 @@ export class asak {
             key: selected_model.key,
             model: selected_model.model,
             delta: {
-                [Symbol.asyncIterator]: () => deltaGenerator()[Symbol.asyncIterator]()
+                [Symbol.asyncIterator]: deltaGenerator
             }
         };
     };
 };
+
+module.exports = asak;

@@ -187,18 +187,22 @@ AI.request( ... ) # 请求api --> return
 
 其中`delta`是一个可迭代对象，迭代的结果为原OpenAI库中`stream[i].choices[0].delta.content`，也就是新增字符串
 
-示例：
+# 4. 示例：
 
 ```javascript
-const AI = new asak(...);
-var callback = AI.request('index', null, [
-    {"role": "user", "content": "你好"}
-]);
-consonle.log(callback.provider);
-consonle.log(callback.model);
-(async()=>{for await(let delta of callback.delta){ // 我觉得这样好看，你管我┐⁠(⁠￣⁠ヘ⁠￣⁠)⁠┌
-    console.log(delta);
-};})();
+var asak = require('asak');
+var ai = new asak( ... );
+(async () => {
+    const cb = await ai.request(
+        'random',
+        (i, m) => {return m.provider === 'sf';},
+        [{"role": "user", "content": "你好"}]
+    );
+    console.log(cb.model);
+    for await (const delta of cb.delta) {
+        console.log(delta);
+    };
+})();
 ```
 
 ```python
