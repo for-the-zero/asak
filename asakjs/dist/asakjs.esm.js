@@ -1092,51 +1092,43 @@ function requireLine () {
 
 var streamUtils = {};
 
-var hasRequiredStreamUtils;
-
-function requireStreamUtils () {
-	if (hasRequiredStreamUtils) return streamUtils;
-	hasRequiredStreamUtils = 1;
-	Object.defineProperty(streamUtils, "__esModule", { value: true });
-	streamUtils.ReadableStreamToAsyncIterable = void 0;
-	/**
-	 * Most browsers don't yet have async iterable support for ReadableStream,
-	 * and Node has a very different way of reading bytes from its "ReadableStream".
-	 *
-	 * This polyfill was pulled from https://github.com/MattiasBuelens/web-streams-polyfill/pull/122#issuecomment-1627354490
-	 */
-	function ReadableStreamToAsyncIterable(stream) {
-	    if (stream[Symbol.asyncIterator])
-	        return stream;
-	    const reader = stream.getReader();
-	    return {
-	        async next() {
-	            try {
-	                const result = await reader.read();
-	                if (result?.done)
-	                    reader.releaseLock(); // release lock when stream becomes closed
-	                return result;
-	            }
-	            catch (e) {
-	                reader.releaseLock(); // release lock when stream becomes errored
-	                throw e;
-	            }
-	        },
-	        async return() {
-	            const cancelPromise = reader.cancel();
-	            reader.releaseLock();
-	            await cancelPromise;
-	            return { done: true, value: undefined };
-	        },
-	        [Symbol.asyncIterator]() {
-	            return this;
-	        },
-	    };
-	}
-	streamUtils.ReadableStreamToAsyncIterable = ReadableStreamToAsyncIterable;
-	
-	return streamUtils;
+Object.defineProperty(streamUtils, "__esModule", { value: true });
+streamUtils.ReadableStreamToAsyncIterable = void 0;
+/**
+ * Most browsers don't yet have async iterable support for ReadableStream,
+ * and Node has a very different way of reading bytes from its "ReadableStream".
+ *
+ * This polyfill was pulled from https://github.com/MattiasBuelens/web-streams-polyfill/pull/122#issuecomment-1627354490
+ */
+function ReadableStreamToAsyncIterable(stream) {
+    if (stream[Symbol.asyncIterator])
+        return stream;
+    const reader = stream.getReader();
+    return {
+        async next() {
+            try {
+                const result = await reader.read();
+                if (result?.done)
+                    reader.releaseLock(); // release lock when stream becomes closed
+                return result;
+            }
+            catch (e) {
+                reader.releaseLock(); // release lock when stream becomes errored
+                throw e;
+            }
+        },
+        async return() {
+            const cancelPromise = reader.cancel();
+            reader.releaseLock();
+            await cancelPromise;
+            return { done: true, value: undefined };
+        },
+        [Symbol.asyncIterator]() {
+            return this;
+        },
+    };
 }
+streamUtils.ReadableStreamToAsyncIterable = ReadableStreamToAsyncIterable;
 
 var hasRequiredStreaming;
 
@@ -1148,7 +1140,7 @@ function requireStreaming () {
 	const index_1 = _shims;
 	const error_1 = requireError();
 	const line_1 = requireLine();
-	const stream_utils_1 = requireStreamUtils();
+	const stream_utils_1 = streamUtils;
 	const core_1 = requireCore();
 	const error_2 = requireError();
 	class Stream {
@@ -8745,7 +8737,8 @@ class asak {
     let selected_model = this.get_model(mode, filter);
     let openai_cilent = new OpenAI({
       baseURL: selected_model.base_url,
-      apiKey: selected_model.key
+      apiKey: selected_model.key,
+      dangerouslyAllowBrowser: true
     });
     let stream = await openai_cilent.chat.completions.create({
       model: selected_model.model,

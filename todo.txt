@@ -1,6 +1,5 @@
 My TODO list:
 ==========
-upload to npm
 readme
 zh doc: py
 python

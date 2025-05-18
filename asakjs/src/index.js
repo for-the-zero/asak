@@ -145,6 +145,7 @@ class asak {
         let openai_cilent = new OpenAI({
             baseURL: selected_model.base_url,
             apiKey: selected_model.key,
+            dangerouslyAllowBrowser: true
         });
         let stream = await openai_cilent.chat.completions.create({
             model: selected_model.model,

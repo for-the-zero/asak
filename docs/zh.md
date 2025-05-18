@@ -16,24 +16,26 @@
 
 导入模块有多种方式
 
-1. 使用node(JavaScript)
+1. JavaScript
+
+使用nodejs
 
 ```sh
-npm install asak
+npm install asakjs
 ```
 
 ```javascript
-const asak = require('asak'); // cjs
-import asak from 'asak'; // esm
+const asak = require('asakjs'); // cjs
+import asak from 'asakpy'; // esm
 ```
 
-2. CDN(JavaScript)
+或者CDN(以unpkg为例)
 
 ```html
-<script src="后面再补上"></script>
+<script src="https://unpkg.com/asakjs/dist/asakjs.js"></script>
 ```
 
-3. pip安装(Python)
+2. pip安装(Python)
 
 后面再补上
 
@@ -141,7 +143,7 @@ AI.get_model(...) # 获取指定模型 --> return
 
 这个的传入参数较为复杂，故拎出来单独介绍
 
-1. `mode`（必填）：排序模式，只能填写字符串，可以填写`index`（筛选后根据索引取最高的一个模型）、`avaliable`（最可用的）、`random`（能用就行，不管了）
+1. `mode`（必填）：排序模式，只能填写字符串，可以填写`index`（筛选后根据索引取最高的一个模型）、`available`（最可用的）、`random`（能用就行，不管了）
 2. `filter`（可选）：一个函数`your_func(index, model)`，参数为是模型的索引和对象，你的函数需要返回布尔值，返回`true`/`True`则表示可以选择该模型，这个函数会被调用多次
 
 返回值为一个对象，结构如下（用JSON表示）：
@@ -190,7 +192,11 @@ AI.request( ... ) # 请求api --> return
 # 4. 示例：
 
 ```javascript
-var asak = require('asak');
+var asak = require('asakjs');
+// or
+// import asak from 'asakjs';
+// or in borwser
+// const asak = asakjs;
 var ai = new asak( ... );
 (async () => {
     const cb = await ai.request(
@@ -206,6 +212,7 @@ var ai = new asak( ... );
 ```
 
 ```python
+import asakpy
 AI = asak(...)
 callback = AI.request('index', None, [
     {"role": "user", "content": "你好"}
