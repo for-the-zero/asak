@@ -1,8 +1,7 @@
 My TODO list:
 ==========
-readme
+pyproject.toml
+upload to pypi
 zh doc: py
-python
 en doc
 readme
-upload to pypi
