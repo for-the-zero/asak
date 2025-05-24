@@ -24,11 +24,11 @@ class asak:
 				'limit_d': self.__config["models"][i]["rate_limit"]["rpd"]
 			})
 		
-		self.recorder = {
-			'get': self.__recorder_get,
-			'replace': self.__recorder_replace,
-			'add': self.__recorder_add
-		}
+		self.recorder = type('', (), {
+			'get': lambda *_: self.__recorder_get(),
+			'replace': lambda _, records: self.__recorder_replace(records),
+			'add': lambda _, records: self.__recorder_add(records)
+		})()
 		
 	def __recorder_ognz(self):
 		now = int(time.time() * 1000)

@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/asak "
-BugTracker = "https://github.com/yourusername/asak/issues"
+Homepage = "https://github.com/for-the-zero/asak"
+BugTracker = "https://github.com/for-the-zero/asak/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
