@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: asakpy
+Version: 1.0.1
+Summary: Auto Select API Key
+Author-email: for_the_zero <forthezero@outlook.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/for-the-zero/asak
+Project-URL: BugTracker, https://github.com/for-the-zero/asak/issues
+Keywords: api,ai,selection-sort,gpt,api-key,llm,openai
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown
+Requires-Dist: openai
+
+# Go to [README.md in Github](https://github.com/for-the-zero/asak)

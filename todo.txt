@@ -1,7 +1,4 @@
 My TODO list:
 ==========
-pyproject.toml
-upload to pypi
-zh doc: py
 en doc
 readme

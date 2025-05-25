@@ -12,17 +12,17 @@
 
 初始化该工具
 
-## 1.1. 安装
-
-导入模块有多种方式
+## 1.1. 安装和导入
 
 1. JavaScript
 
-使用nodejs
+使用nodejs，通过npm安装
 
 ```sh
 npm install asakjs
 ```
+
+然后导入，支持cjs和esm
 
 ```javascript
 const asak = require('asakjs'); // cjs
@@ -37,7 +37,17 @@ import asak from 'asakpy'; // esm
 
 2. pip安装(Python)
 
-后面再补上
+通过pip安装
+
+```sh
+pip install asakpy
+```
+
+然后导入
+
+```python
+from asakpy import asak
+```
 
 ## 1.2. 定义
 
@@ -50,7 +60,7 @@ var AI = new asak( {Object} );
 Python:
 
 ```python
-AI = asak( {Object} )
+AI = asak( {dict} )
 ```
 
 ## 1.3. 配置json
@@ -212,7 +222,7 @@ var ai = new asak( ... );
 ```
 
 ```python
-import asakpy
+from asakpy import asak
 AI = asak(...)
 callback = AI.request('index', None, [
     {"role": "user", "content": "你好"}
