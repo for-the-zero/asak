@@ -1,10 +1,11 @@
-# asak 文档
+# 文档
 
-该文档含有Python、JavaScript的库api
+该文档含有Python、JavaScript的库api调用方式
 
 注：
 - 含有` --> return`的注释代表该函数有返回值
-- `{Object}`代表传入一个对象，`[Array]`和`[List]`分别代表在JavaScript中传入一个数组和在Python中传入一个列表
+- `{Object}`和`{dict}`代表传入一个对象
+- `[Array]`和`[list]`分别代表在JavaScript中传入一个数组和在Python中传入一个列表
 
 ---
 
@@ -16,7 +17,7 @@
 
 1. JavaScript
 
-使用nodejs，通过npm安装
+使用Node.js，通过npm安装
 
 ```sh
 npm install asakjs
@@ -114,8 +115,8 @@ Python:
 
 ```python
 AI.recorder.get() # 获取所有记录 --> return
-AI.recorder.replace( [List] ) # 替换所有记录
-AI.recorder.add( [List] ) # 追加到记录 --> return
+AI.recorder.replace( [list] ) # 替换所有记录
+AI.recorder.add( [list] ) # 追加到记录 --> return
 ```
 
 - `.replace`的作用是完全替换掉原有的记录

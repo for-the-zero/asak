@@ -1,4 +1,0 @@
-My TODO list:
-==========
-en doc
-readme
