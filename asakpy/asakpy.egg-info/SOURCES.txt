@@ -6,4 +6,3 @@ asakpy.egg-info/SOURCES.txt
 asakpy.egg-info/dependency_links.txt
 asakpy.egg-info/requires.txt
 asakpy.egg-info/top_level.txt
-test/test.py

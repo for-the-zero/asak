@@ -7,16 +7,9 @@ class asak:
 	def __init__(self, config):
 		self.__config = {'providers': {}, 'models': []}
 		self.__records = []
-		if(
-			config and
-			isinstance(config.get("providers"), dict) and
-			len(config['providers']) > 0 and
-			isinstance(config.get("models"), list) and
-			len(config['models']) > 0
-		):
-			self.__config = config
-		else:
+		if not self.__is_config_valid(config):
 			raise ValueError("Err when reading config")
+		self.__config = config
 		for i in range(len(self.__config["models"])):
 			self.__records.append({
 				'm': [], 'd': [],
@@ -29,6 +22,31 @@ class asak:
 			'replace': lambda _, records: self.__recorder_replace(records),
 			'add': lambda _, records: self.__recorder_add(records)
 		})()
+		
+	def __is_config_valid(self, config):
+		if not config or not isinstance(config, dict):
+			return False
+		if not isinstance(config.get("providers"), dict):
+			return False
+		for provider in config["providers"].values():
+			if (not isinstance(provider, dict) or 
+				not isinstance(provider.get("base_url"), str) or
+				not isinstance(provider.get("key"), str)):
+				return False
+		if not isinstance(config.get("models"), list) or not config["models"]:
+			return False
+		for model in config["models"]:
+			if (not isinstance(model, dict) or
+				not isinstance(model.get("provider"), str) or
+				not isinstance(model.get("model"), str) or
+				not isinstance(model.get("rate_limit"), dict) or
+				not isinstance(model["rate_limit"].get("rpm"), int) or
+				not isinstance(model["rate_limit"].get("rpd"), int) or
+				model["rate_limit"]["rpm"] <= 0 or
+				model["rate_limit"]["rpd"] <= 0 or
+				model["provider"] not in config["providers"]):
+				return False
+		return True
 		
 	def __recorder_ognz(self):
 		now = int(time.time() * 1000)
@@ -49,30 +67,32 @@ class asak:
 	def __recorder_get(self):
 		self.__recorder_ognz()
 		return self.__records
+	def __is_record_valid(self, records):
+		if not isinstance(records, list) or len(records) != len(self.__records):
+			return False
+		for i in range(len(records)):
+			record = records[i]
+			if (not isinstance(record, dict) or 
+				not isinstance(record.get('m'), list) or 
+				not isinstance(record.get('d'), list) or
+				record.get('limit_m') != self.__records[i]['limit_m'] or
+				record.get('limit_d') != self.__records[i]['limit_d']):
+				return False
+		return True
+		
 	def __recorder_replace(self, records):
-		if isinstance(records, list) and len(records) == len(self.__records):
-			self.__records = records
-		else:
-			raise ValueError('The length your records is not equal to the length of the models or it\'s not an array')
+		if not self.__is_record_valid(records):
+			raise ValueError('Invalid records format')
+		self.__records = records
 		self.__recorder_ognz()
+		
 	def __recorder_add(self, records):
-		if isinstance(records, list) and len(records) == len(self.__records):
-			new_records = copy.deepcopy(self.__records)
-			for i in range(len(records)):
-				if (
-					isinstance(records[i].get('m'), list) and
-					isinstance(records[i].get('d'), list) and
-					self.__records[i]['limit_m'] == records[i]['limit_m'] and
-					self.__records[i]['limit_d'] == records[i]['limit_d']
-				):
-					new_records[i]['m'].extend(records[i]['m'])
-					new_records[i]['d'].extend(records[i]['d'])
-				else:
-					raise ValueError('The format of your records is not correct or rpm/rpd is not equal to the models')
-			self.__records = new_records
-			self.__recorder_ognz()
-		else:
-			raise ValueError('The length your records is not equal to the length of the models or it\'s not an array')
+		if not self.__is_record_valid(records):
+			raise ValueError('Invalid records format')
+		for i in range(len(records)):
+			self.__records[i]['m'].extend(records[i]['m'])
+			self.__records[i]['d'].extend(records[i]['d'])
+		self.__recorder_ognz()
 	
 	def __is_model_available(self, i):
 		if (len(self.__records[i]['m']) < self.__records[i]['limit_m'] and 

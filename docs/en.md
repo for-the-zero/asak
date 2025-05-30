@@ -99,7 +99,7 @@ The following points require attention:
 1.  The ID in `providers` can be any name, but it must not be repeated. The `provider` in `models` must exist in `providers` and correspond to it.
 2.  The `model` name for each model in `models` is used when calling the LLM API.
 3.  The `tags` for each model in `models` are optional and can be `[]`.
-4.  The `rate_limit` for each model in `models` is optional. `rpm` and `rpd` represent requests per minute and requests per day, respectively. If not filled, it means there is no rate limit in that aspect. For no limits at all, fill in `{}`.
+4.  The `rate_limit` for each model in `models` is required
 
 # 2. Rate Limit Recording
 

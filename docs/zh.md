@@ -99,7 +99,7 @@ AI = asak( {dict} )
 1. providers中的id随便填写，但不能重复，models中的provider必须在providers中存在且对应
 2. models中每个模型的模型名称，是调用llm的api时使用的
 3. models中每个模型的tags是可选的，可以是`[]`
-4. models中每个模型的rate_limit是可选的，rpm和rpd分别表示每分钟请求次数和每天请求次数，如果不填写，则表示在该方面没有速率限制，完全没有限制填`{}`
+4. models中每个模型的rate_limit是必填的
 
 # 2. 速率限制记录相关
 

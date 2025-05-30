@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: asakpy
-Version: 1.0.1
+Version: 1.0.2
 Summary: Auto Select API Key
 Author-email: for_the_zero <forthezero@outlook.com>
 License-Expression: MIT
@@ -18,4 +18,6 @@ Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Description-Content-Type: text/markdown
 Requires-Dist: openai
 
-# Go to [README.md in Github](https://github.com/for-the-zero/asak)
+# API Smart Access Kit
+
+## Go to [README.md in Github](https://github.com/for-the-zero/asak)
