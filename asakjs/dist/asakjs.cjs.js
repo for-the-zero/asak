@@ -578,17 +578,9 @@ var core = {};
 
 var version = {};
 
-var hasRequiredVersion;
-
-function requireVersion () {
-	if (hasRequiredVersion) return version;
-	hasRequiredVersion = 1;
-	Object.defineProperty(version, "__esModule", { value: true });
-	version.VERSION = void 0;
-	version.VERSION = '4.98.0'; // x-release-please-version
-	
-	return version;
-}
+Object.defineProperty(version, "__esModule", { value: true });
+version.VERSION = void 0;
+version.VERSION = '4.98.0'; // x-release-please-version
 
 var streaming = {};
 
@@ -1619,7 +1611,7 @@ function requireCore () {
 		var _AbstractPage_client;
 		Object.defineProperty(exports, "__esModule", { value: true });
 		exports.isObj = exports.toFloat32Array = exports.toBase64 = exports.getHeader = exports.getRequiredHeader = exports.isHeadersProtocol = exports.isRunningInBrowser = exports.debug = exports.hasOwn = exports.isEmptyObj = exports.maybeCoerceBoolean = exports.maybeCoerceFloat = exports.maybeCoerceInteger = exports.coerceBoolean = exports.coerceFloat = exports.coerceInteger = exports.readEnv = exports.ensurePresent = exports.castToError = exports.sleep = exports.safeJSON = exports.isRequestOptions = exports.createResponseHeaders = exports.PagePromise = exports.AbstractPage = exports.APIClient = exports.APIPromise = exports.createForm = exports.multipartFormRequestOptions = exports.maybeMultipartFormRequestOptions = void 0;
-		const version_1 = requireVersion();
+		const version_1 = version;
 		const streaming_1 = requireStreaming();
 		const error_1 = requireError();
 		const index_1 = _shims;
@@ -8606,7 +8598,7 @@ class asak {
   };
   #records = [];
   constructor(config) {
-    if (config && config.providers && typeof config.providers === 'object' && Object.keys(config.providers).length > 0 && config.models && Array.isArray(config.models) && config.models.length > 0) {
+    if (this.#is_config_valid(config)) {
       this.#config = config;
     } else {
       throw new Error('Err when reading config');
@@ -8625,6 +8617,40 @@ class asak {
     } catch (e) {
       throw new Error('Err when initializing models');
     }
+  }
+  #is_config_valid(config) {
+    // config
+    if (!config || typeof config !== 'object') {
+      return false;
+    }
+    // config.providers
+    if (!config.providers || typeof config.providers !== 'object' || Object.values(config.providers).some(provider => {
+      return typeof provider !== 'object' || typeof provider.base_url !== 'string' || typeof provider.key !== 'string';
+    })) {
+      return false;
+    }
+    // config.models
+    if (!Array.isArray(config.models) || config.models.length === 0) {
+      return false;
+    }
+    if (config.models.some(model => {
+      return typeof model !== 'object' || typeof model.provider !== 'string' || typeof model.model !== 'string' || typeof model.rate_limit !== 'object' || typeof model.rate_limit.rpm !== 'number' || typeof model.rate_limit.rpd !== 'number' || model.rate_limit.rpm <= 0 || model.rate_limit.rpd <= 0 || model.provider in config.providers === false;
+    })) {
+      return false;
+    }
+    return true;
+  }
+  #is_record_valid(records) {
+    if (!Array.isArray(records) || records.length !== this.#records.length) {
+      return false;
+    }
+    for (let i = 0; i < records.length; i++) {
+      const record = records[i];
+      if (!record || !Array.isArray(record.m) || !Array.isArray(record.d) || record.limit_m !== this.#records[i].limit_m || record.limit_d !== this.#records[i].limit_d) {
+        return false;
+      }
+    }
+    return true;
   }
   #recorder_ognz() {
     let now = Date.now();
@@ -8655,37 +8681,25 @@ class asak {
       return this.#records;
     },
     replace: records => {
-      if (Array.isArray(records) && records.length === this.#records.length) {
-        this.#records = records;
-      } else {
-        throw new Error('The length your records is not equal to the length of the models or it\'s not an array');
+      if (!this.#is_record_valid(records)) {
+        throw new Error('Invalid records format');
       }
+      this.#records = records;
       this.#recorder_ognz();
     },
     add: records => {
-      if (Array.isArray(records) && records.length === this.#records.length) {
-        let new_records = JSON.parse(JSON.stringify(this.#records));
-        for (let i = 0; i < records.length; i++) {
-          if (Array.isArray(records[i].m) && Array.isArray(records[i].d) && this.#records[i].limit_m === records[i].limit_m && this.#records[i].limit_d === records[i].limit_d) {
-            new_records[i].m.push(...records[i].m);
-            new_records[i].d.push(...records[i].d);
-          } else {
-            throw new Error('The format of your records is not correct or rpm/rpd is not equal to the models');
-          }
-        }
-        this.#records = new_records;
-        this.#recorder_ognz();
-      } else {
-        throw new Error('The length your records is not equal to the length of the models or it\'s not an array');
+      if (!this.#is_record_valid(records)) {
+        throw new Error('Invalid records format');
       }
+      for (let i = 0; i < records.length; i++) {
+        this.#records[i].m.push(...records[i].m);
+        this.#records[i].d.push(...records[i].d);
+      }
+      this.#recorder_ognz();
     }
   };
   #is_model_available(i) {
-    if (this.#records[i].m.length < this.#records[i].limit_m && this.#records[i].d.length < this.#records[i].limit_d) {
-      return true;
-    } else {
-      return false;
-    }
+    return this.#records[i].m.length < this.#records[i].limit_m && this.#records[i].d.length < this.#records[i].limit_d;
   }
   #model_availability(i) {
     let m_avblty = (this.#records[i].limit_m - this.#records[i].m.length) / this.#records[i].limit_m;
