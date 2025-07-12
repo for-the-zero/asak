@@ -3,6 +3,7 @@
 该文档含有Python、JavaScript的库api调用方式
 
 注：
+
 - 含有` --> return`的注释代表该函数有返回值
 - `{Object}`和`{dict}`代表传入一个对象
 - `[Array]`和`[list]`分别代表在JavaScript中传入一个数组和在Python中传入一个列表
@@ -55,13 +56,13 @@ from asakpy import asak
 JavaScript:
 
 ```javascript
-var AI = new asak( {Object} );
+var client = new asak( {Object} );
 ```
 
 Python:
 
 ```python
-AI = asak( {dict} )
+client = asak( {dict} )
 ```
 
 ## 1.3. 配置json
@@ -106,23 +107,26 @@ AI = asak( {dict} )
 JavaScript:
 
 ```javascript
-AI.recorder.get(); // 获取所有记录 --> return
-AI.recorder.replace( [Array] ); // 替换所有记录
-AI.recorder.add( [Array] );  // 追加到记录 --> return
+client.recorder.get(); // 获取所有记录 --> return
+client.recorder.replace( [Array] ); // 替换所有记录
+client.recorder.add( [Array] );  // 追加到记录 --> return
+client.recorder.use(index, filter);
 ```
 
 Python:
 
 ```python
-AI.recorder.get() # 获取所有记录 --> return
-AI.recorder.replace( [list] ) # 替换所有记录
-AI.recorder.add( [list] ) # 追加到记录 --> return
+client.recorder.get() # 获取所有记录 --> return
+client.recorder.replace( [list] ) # 替换所有记录
+client.recorder.add( [list] ) # 追加到记录 --> return
+client.recorder.use(index, filter)
 ```
 
 - `.replace`的作用是完全替换掉原有的记录
 - `.add`的作用是追加到原有的记录，将新旧记录进行合并
+- `.use`的作用是寻找模型并给它记录，两个参数任选一个，如果都传入这`index`优先；`filter`是个函数，按索引顺序遍历模型的时候执行，当它返回`true`时代表模型被选中然后停止遍历并记录改模型，传入`your_func(index, model)`
 
-以上返回均为一个数组/列表，结构如下（用JSON表示）：
+`.get`会返回均为一个数组/列表，结构如下（用JSON表示）：
 
 ```json
 [
@@ -145,11 +149,11 @@ AI.recorder.add( [list] ) # 追加到记录 --> return
 ## 3.1. 获取模型
 
 ```javascript
-AI.get_model(...); // 获取指定模型 --> return
+client.get_model(...); // 获取指定模型 --> return
 ```
 
 ```python
-AI.get_model(...) # 获取指定模型 --> return
+client.get_model(...) # 获取指定模型 --> return
 ```
 
 这个的传入参数较为复杂，故拎出来单独介绍
@@ -173,11 +177,11 @@ AI.get_model(...) # 获取指定模型 --> return
 你可以自行请求api，也可以用这个直接请求api（`/chat/completion`），仅支持OpenAI格式的API
 
 ```javascript
-AI.request( ... ); // 请求api --> return
+client.request( ... ); // 请求api --> return
 ```
 
 ```python
-AI.request( ... ) # 请求api --> return
+client.request( ... ) # 请求api --> return
 ```
 
 传入参数:
@@ -185,8 +189,9 @@ AI.request( ... ) # 请求api --> return
 1. `mode`（必填）
 2. `filter`（可选）
 3. `messages`（必填）：消息数组，与OpenAI的api一致
+4. `is_stream`（可选）：布尔值，是否为流式请求，默认为`true`
 
-返回值（用JSON表示）：
+当`is_stream`为`true`时，返回值（用JSON表示）：
 
 ```json
 {
@@ -194,11 +199,29 @@ AI.request( ... ) # 请求api --> return
     "base_url": "https://your-api.com/base_url",
     "key": "your-api-key",
     "model": "模型名称",
-    "delta": delta
+    "delta": delta,
+    "original": original,
 }
 ```
 
-其中`delta`是一个可迭代对象，迭代的结果为原OpenAI库中`stream[i].choices[0].delta.content`，也就是新增字符串
+其中`delta`是一个可迭代对象，迭代的结果为原OpenAI库中`result[i].choices[0].delta.content`，也就是新增字符串
+
+其中`original`是原本OpenAO库调用`.chat.completion`原始返回结果
+
+当`is_stream`为`false`时，返回值（用JSON表示）：
+
+```json
+{
+    "provider": "providers中的id",
+    "base_url": "https://your-api.com/base_url",
+    "key": "your-api-key",
+    "model": "模型名称",
+    "message": "result.choices[0].message中的结果",
+    "original": original,
+}
+```
+
+其中`original`是原本OpenAO库调用`.chat.completion`原始返回结果
 
 # 4. 示例：
 
@@ -224,8 +247,8 @@ var ai = new asak( ... );
 
 ```python
 from asakpy import asak
-AI = asak(...)
-callback = AI.request('index', None, [
+client = asak(...)
+callback = client.request('index', None, [
     {"role": "user", "content": "你好"}
 ])
 print(callback.provider)

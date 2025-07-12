@@ -1,4 +1,5 @@
 const { OpenAI } = require("openai");
+const { use } = require("react");
 
 class asak {
     #config = {providers: {}, models: []};
@@ -111,7 +112,32 @@ class asak {
                 this.#records[i].d.push(...records[i].d);
             };
             this.#recorder_ognz();
-            },
+        },
+        use: (index=null, find=null) => {
+            if(index === null && find === null){
+                throw new Error('Either index or find param is required');
+            };
+            if(index === null && find !== null){
+                if(typeof find === 'function'){
+                    let i = 0;
+                    while(true){
+                        if(i >= this.#records.length){
+                            return;
+                        };
+                        if(find(i, this.#config.models[i])){
+                            index = i;
+                            break;
+                        };
+                        i++;
+                    };
+                } else {
+                    throw new Error('`find` param is not a function');
+                };
+            };
+            this.#records[index].m.push(Date.now());
+            this.#records[index].d.push(Date.now());
+            this.#recorder_ognz();
+        }
     };
 
     #is_model_available(i){
@@ -160,34 +186,46 @@ class asak {
             "model": this.#config.models[selected_model].model,
         };
     };
-    async request(mode, filter, messages){
+    async request(mode, filter, messages, is_stream=true){
         let selected_model = this.get_model(mode, filter);
         let openai_cilent = new OpenAI({
             baseURL: selected_model.base_url,
             apiKey: selected_model.key,
             dangerouslyAllowBrowser: true
         });
-        let stream = await openai_cilent.chat.completions.create({
+        let result = await openai_cilent.chat.completions.create({
             model: selected_model.model,
-            stream: true,
+            stream: is_stream,
             messages: messages,
         });
-        let deltaGenerator = async function*() {
-            for await (const chunk of stream) {
-                const content = chunk.choices?.[0]?.delta?.content;
-                if (content !== undefined) {
-                    yield content;
+        if(is_stream){
+            let deltaGenerator = async function*() {
+                for await (const chunk of result) {
+                    const content = chunk.choices?.[0]?.delta?.content;
+                    if (content !== undefined) {
+                        yield content;
+                    };
                 };
             };
-        };
-        return {
-            provider: selected_model.provider,
-            base_url: selected_model.base_url,
-            key: selected_model.key,
-            model: selected_model.model,
-            delta: {
-                [Symbol.asyncIterator]: deltaGenerator
-            }
+            return {
+                provider: selected_model.provider,
+                base_url: selected_model.base_url,
+                key: selected_model.key,
+                model: selected_model.model,
+                delta: {
+                    [Symbol.asyncIterator]: deltaGenerator
+                },
+                original: result
+            };
+        } else {
+            return {
+                provider: selected_model.provider,
+                base_url: selected_model.base_url,
+                key: selected_model.key,
+                model: selected_model.model,
+                message: result.choices[0].message,
+                original: result
+            };
         };
     };
 };
