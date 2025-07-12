@@ -1,10 +1,55 @@
 const { OpenAI } = require("openai");
 const { use } = require("react");
 
+/**
+ * Asak AI model management class
+ * 管理AI模型请求的类
+ * 
+ * @class
+ * @example
+ * // JavaScript usage
+ * const asak = require('asakjs');
+ * const client = new asak(config);
+ * 
+ * @example
+ * // 使用示例
+ * const asak = require('asakjs');
+ * const client = new asak(config);
+ */
 class asak {
     #config = {providers: {}, models: []};
     #records = [];
 
+    /**
+     * Create an asak instance
+     * 创建asak实例
+     * 
+     * @param {Object} config - Configuration object
+     * @param {Object} config.providers - AI providers configuration
+     * @param {Array} config.models - AI models configuration
+     * @throws {Error} If configuration is invalid
+     * 
+     * @example
+     * const config = {
+     *   providers: {
+     *     'provider1': { base_url: '...', key: '...' }
+     *   },
+     *   models: [
+     *     { provider: 'provider1', model: 'gpt-4', rate_limit: { rpm: 3, rpd: 200 } }
+     *   ]
+     * };
+     * 
+     * @example
+     * // 配置示例
+     * const config = {
+     *   providers: {
+     *     'provider1': { base_url: '...', key: '...' }
+     *   },
+     *   models: [
+     *     { provider: 'provider1', model: 'gpt-4', rate_limit: { rpm: 3, rpd: 200 } }
+     *   ]
+     * };
+     */
     constructor(config){
         if(this.#is_config_valid(config)){
             this.#config = config;
@@ -25,6 +70,14 @@ class asak {
         };
     };
 
+    /**
+     * Validate configuration object
+     * 验证配置对象是否有效
+     * 
+     * @private
+     * @param {Object} config - Configuration object to validate
+     * @returns {boolean} True if config is valid
+     */
     #is_config_valid(config){
         // config
         if(!config || typeof config !== 'object'){return false;};
@@ -51,6 +104,14 @@ class asak {
         return true;
     };
 
+    /**
+     * Validate records object
+     * 验证记录对象是否有效
+     * 
+     * @private
+     * @param {Array} records - Records to validate
+     * @returns {boolean} True if records are valid
+     */
     #is_record_valid(records){
         if(!Array.isArray(records) || records.length !== this.#records.length){
             return false;
@@ -68,6 +129,12 @@ class asak {
         return true;
     };
 
+    /**
+     * Organize and clean up records
+     * 整理和清理记录
+     * 
+     * @private
+     */
     #recorder_ognz(){
         let now = Date.now();
         let new_records = [];
@@ -91,11 +158,27 @@ class asak {
         };
         this.#records = new_records;
     };
+    /**
+     * Rate limit recorder
+     * 速率限制记录器
+     * @namespace
+     */
     recorder = {
+        /**
+         * Get all records
+         * 获取所有记录
+         * @returns {Array} Current records
+         */
         get: () => {
             this.#recorder_ognz();
             return this.#records;
         },
+        /**
+         * Replace all records
+         * 替换所有记录
+         * @param {Array} records - New records to replace with
+         * @throws {Error} If records format is invalid
+         */
         replace: (records) => {
             if(!this.#is_record_valid(records)){
                 throw new Error('Invalid records format');
@@ -103,6 +186,13 @@ class asak {
             this.#records = records;
             this.#recorder_ognz();
         },
+        /**
+         * Add records
+         * 追加记录
+         * @param {Array} records - Records to append
+         * @returns {Array} Merged records
+         * @throws {Error} If records format is invalid
+         */
         add: (records) => {
             if (!this.#is_record_valid(records)) {
                 throw new Error('Invalid records format');
@@ -113,6 +203,13 @@ class asak {
             };
             this.#recorder_ognz();
         },
+        /**
+         * Record model usage
+         * 记录模型使用情况
+         * @param {number} [index] - Model index
+         * @param {Function} [find] - Filter function (i, m) => boolean
+         * @throws {Error} If neither index nor find is provided
+         */
         use: (index=null, find=null) => {
             if(index === null && find === null){
                 throw new Error('Either index or find param is required');
@@ -140,14 +237,46 @@ class asak {
         }
     };
 
+    /**
+     * Check if model is available
+     * 检查模型是否可用
+     * 
+     * @private
+     * @param {number} i - Model index
+     * @returns {boolean} True if model is available
+     */
     #is_model_available(i){
         return this.#records[i].m.length < this.#records[i].limit_m && this.#records[i].d.length < this.#records[i].limit_d;
     };
+    /**
+     * Calculate model availability
+     * 计算模型可用性
+     * 
+     * @private
+     * @param {number} i - Model index
+     * @returns {number} Availability score (0-1)
+     */
     #model_availability(i){
         let m_avblty = (this.#records[i].limit_m - this.#records[i].m.length) / this.#records[i].limit_m;
         let d_avblty = (this.#records[i].limit_d - this.#records[i].d.length) / this.#records[i].limit_d;
         return Math.min(m_avblty, d_avblty);
     };
+    /**
+     * Get an available model
+     * 获取可用模型
+     * 
+     * @param {string} mode - Selection mode ('index', 'available', 'random')
+     * @param {Function} [filter] - Optional filter function (i, m) => boolean
+     * @returns {Object} Selected model info
+     * @throws {Error} If no model is available
+     * 
+     * @example
+     * const model = client.get_model('available', (i, m) => m.tags.includes('gpt'));
+     * 
+     * @example
+     * // 获取模型示例
+     * const model = client.get_model('available', (i, m) => m.tags.includes('gpt'));
+     */
     get_model(mode, filter=(i,m)=>{return true;} ){
         this.#recorder_ognz();
         let preparing_models = [];
@@ -186,6 +315,27 @@ class asak {
             "model": this.#config.models[selected_model].model,
         };
     };
+    /**
+     * Make an API request
+     * 发起API请求
+     * 
+     * @param {string} mode - Selection mode ('index', 'available', 'random')
+     * @param {Function} [filter] - Optional filter function (i, m) => boolean
+     * @param {Array} messages - Chat messages array
+     * @param {boolean} [is_stream=true] - Whether to use streaming
+     * @returns {Promise<Object>} API response
+     * 
+     * @example
+     * const response = await client.request('available', null, [
+     *   { role: 'user', content: 'Hello' }
+     * ]);
+     * 
+     * @example
+     * // 请求示例
+     * const response = await client.request('available', null, [
+     *   { role: 'user', content: '你好' }
+     * ]);
+     */
     async request(mode, filter, messages, is_stream=true){
         let selected_model = this.get_model(mode, filter);
         let openai_cilent = new OpenAI({
