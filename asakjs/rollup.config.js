@@ -1,3 +1,4 @@
+import { terser } from 'rollup-plugin-terser';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
@@ -27,6 +28,13 @@ export default {
         commonjs(),
         babel({
             exclude: 'node_modules/**'
-        })
-    ]
+        }),
+        terser({
+            format: {
+                comments: function (node, comment) {
+                    return comment.type === 'comment2' && /^**/.test(comment.value);
+                },
+            },
+        }),
+    ],
 };
